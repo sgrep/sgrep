@@ -17,6 +17,29 @@ func (dir* Directory) PrettyPrint() {
 	dir.pretty_print_helper(0)
 }
 
+
+/**
+  Returns all files as fully-qualified filename from directory dir.
+*/
+func (dir* Directory) ListFiles() []string {
+    to_return := make([]string,0)
+
+    for _, filename := range dir.Files {
+        fq_filename := path.Join(dir.Name,filename)
+        to_return = append(to_return, fq_filename)
+    }
+
+    for _, subdir := range dir.Directories {
+        subdir_file_slice := subdir.ListFiles()
+
+        for _, filename := range subdir_file_slice {
+            fq_filename := path.Join(dir.Name,filename)
+            to_return = append(to_return, fq_filename)
+        }
+    }
+    return to_return
+}
+
 func (dir *Directory) pretty_print_helper(indentation_level uint32) {
 
     indent_str := ""
