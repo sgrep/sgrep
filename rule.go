@@ -1,5 +1,7 @@
 package sgrep
 
+import "path/filepath"
+
 /**
 Basic rule struct: when we encounter an sgrep file
 */
@@ -14,6 +16,14 @@ type Rule struct {
 
 // returns true if this rule filters (ie., says not to look in) file named filename.
 func (rule* Rule) file_filterer(filename string) bool {
+
+    did_match, err :=  filepath.Match(rule.raw_rule_text,filename)
+    if err != nil {
+        panic("Broken match operation in rule")
+    }
+
+    if did_match {
+        return true
+    }
     return false
 }
-
