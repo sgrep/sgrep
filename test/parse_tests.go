@@ -1,6 +1,7 @@
 package main
 
 import "sgrep/lib"
+import "io/ioutil"
 
 type ruleTextAndExpected struct {
     ruleText string
@@ -73,3 +74,49 @@ func testCommentedRules() bool {
     }
     return true
 }
+
+
+/**
+Creates a temporary sgrep file and tries to read its contents to
+ensure we read all the rules we expect in it.
+*/
+func testSgrepFileRead() bool {
+    tmpFile, err := ioutil.TempFile("","empty")
+
+    if err != nil {
+        panic("Cannot create temporary file for sgrep read test")
+    }
+
+    sgrepFileContents := "a\n"
+    sgrepFileContents += "# m\n"
+    sgrepFileContents += "fefe   m\n"
+    sgrepFileContents += "fefes #  m\n"
+    sgrepFileContents += "\n\n"
+    
+    tmpFile.WriteString(sgrepFileContents)
+    tmpFile.Sync()
+
+    // value has no meaning.  only using bool value because can't find
+    // golang-native way to use a set.
+    expectedRuleContents := map[string]bool {
+        "a": true,
+        "fefe": true,
+        "fefes": true,
+    }
+
+    parsedRules := sgrep.RuleSliceFromSgrepFile(tmpFile.Name())
+
+    if len(parsedRules) != len(expectedRuleContents) {
+        return false
+    }
+
+    for _, parsedRule := range parsedRules {
+        
+        _, exists := expectedRuleContents[parsedRule.RawRuleText]
+        if ! exists {
+            return false
+        }
+    }
+    return true
+}
+

@@ -6,7 +6,7 @@ import "fmt"
 
 func main() {
 
-    // test 1
+    // test 1: check that we apply rules correctly
     fmt.Print("py exclude subfolders .... ")
     if !testPyExcludeSubfolders() {
         fmt.Println("FAILED")
@@ -14,9 +14,17 @@ func main() {
         fmt.Println("PASSED")
     }
 
-    // test 2
+    // test 2: test that we parse individual rules correctly
     fmt.Print("parse rules with comments .... ")
     if !testCommentedRules() {
+        fmt.Println("FAILED")
+    } else {
+        fmt.Println("PASSED")
+    }
+
+    // test 3: test that we parse files of rules correctly
+    fmt.Print("parse sgrep file .... ")
+    if !testSgrepFileRead() {
         fmt.Println("FAILED")
     } else {
         fmt.Println("PASSED")

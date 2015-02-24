@@ -71,7 +71,7 @@ func ParseRule(sgrepAbsFilename, text string) *Rule{
 /**
 @param absFilename --- Absolute filename to read sgrep rules from.
 */
-func ruleSliceFromSgrepFile (absFilename string ) [] *Rule {
+func RuleSliceFromSgrepFile (absFilename string ) [] *Rule {
     var toReturn [] *Rule
     fh, err := os.Open(absFilename)
     if err != nil {
