@@ -3,7 +3,6 @@ package sgrep
 import "path/filepath"
 import "strings"
 import "os"
-import "io"
 import "bufio"
 
 const COMMENT_STRING string = "#"
@@ -81,18 +80,20 @@ func RuleSliceFromSgrepFile (absFilename string ) [] *Rule {
     // at end of function, close fh
     defer fh.Close()
 
-    fileReader := bufio.NewReader(fh)
-    line := ""
-    for {
-        line, err = fileReader.ReadString('\n')
-        if err == io.EOF {
-            break
-        }
-
-        newRule := ParseRule(absFilename, line)
+    
+    scanner := bufio.NewScanner(fh)
+    for scanner.Scan() {
+        newRule := ParseRule(absFilename, scanner.Text())
         if newRule != nil {
             toReturn = append(toReturn, newRule)
         }
+
     }
+    err = scanner.Err()
+    if err != nil {
+        panic("Error scanning file " + absFilename +
+            " while reading sgrep rules.")
+    }
+
     return toReturn
 }
