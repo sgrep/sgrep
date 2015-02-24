@@ -2,6 +2,9 @@ package sgrep
 
 import "path/filepath"
 import "strings"
+import "os"
+import "io"
+import "bufio"
 
 const COMMENT_STRING string = "#"
 
@@ -62,4 +65,34 @@ func ParseRule(sgrepAbsFilename, text string) *Rule{
         return nil
     }
     return ConstructRule(sgrepAbsFilename, text)
+}
+
+
+/**
+@param absFilename --- Absolute filename to read sgrep rules from.
+*/
+func ruleSliceFromSgrepFile (absFilename string ) [] *Rule {
+    var toReturn [] *Rule
+    fh, err := os.Open(absFilename)
+    if err != nil {
+        panic ("Could not open " + absFilename +
+            " for reading sgrep rules.")
+    }
+    // at end of function, close fh
+    defer fh.Close()
+
+    fileReader := bufio.NewReader(fh)
+    line := ""
+    for {
+        line, err = fileReader.ReadString('\n')
+        if err == io.EOF {
+            break
+        }
+
+        newRule := ParseRule(absFilename, line)
+        if newRule != nil {
+            toReturn = append(toReturn, newRule)
+        }
+    }
+    return toReturn
 }
