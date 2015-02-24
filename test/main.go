@@ -6,16 +6,21 @@ import "fmt"
 
 func main() {
 
-    fmt.Print("py exclude .... ")
-    if !test_py_exclude() {
+
+    fmt.Print("py exclude subfolders .... ")
+    if !testPyExcludeSubfolders() {
         fmt.Println("FAILED")
     } else {
         fmt.Println("PASSED")
     }
 }
 
+/**
+Check that correctly excludes python files in subfolders when use *py
+globs.
+ */
 
-func test_py_exclude() bool {
+func testPyExcludeSubfolders() bool {
     py_exclude_rule := sgrep.ConstructRule(".sgrep","*py")
 
     if ! py_exclude_rule.FileFilterer(filepath.Join("a","b","c.py")) {
