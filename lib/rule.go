@@ -14,14 +14,14 @@ type Rule struct {
     // loaded from.
     containingFileAbsPath string
     // the raw text of the associated rule
-    rawRuleText string
+    RawRuleText string
 }
 
 
 func ConstructRule(containingFileAbsPath, rawRuleText string) *Rule {
     r :=  Rule {}
     r.containingFileAbsPath = containingFileAbsPath
-    r.rawRuleText = rawRuleText
+    r.RawRuleText = rawRuleText
     return &r
 }
 
@@ -30,7 +30,7 @@ func ConstructRule(containingFileAbsPath, rawRuleText string) *Rule {
 // named filename.
 func (rule* Rule) FileFilterer(filename string) bool {
 
-    didMatch, err :=  filepath.Match(rule.rawRuleText,filename)
+    didMatch, err :=  filepath.Match(rule.RawRuleText,filename)
     if err != nil {
         panic("Broken match operation in rule")
     }
