@@ -92,6 +92,9 @@ func testSgrepFileRead() bool {
     sgrepFileContents += "fefe   m\n"
     sgrepFileContents += "fefes #  m\n"
     sgrepFileContents += "\n\n"
+    sgrepFileContents += "a/b/c*\n"
+    sgrepFileContents += "*py\n"
+    sgrepFileContents += "a/*/something.txt"
     
     tmpFile.WriteString(sgrepFileContents)
     tmpFile.Sync()
@@ -100,8 +103,11 @@ func testSgrepFileRead() bool {
     // golang-native way to use a set.
     expectedRuleContents := map[string]bool {
         "a": true,
-        "fefe": true,
+        "fefe   m": true,
         "fefes": true,
+        "a/b/c*": true,
+        "*py": true,
+        "a/*/something.txt": true,
     }
 
     parsedRules := sgrep.RuleSliceFromSgrepFile(tmpFile.Name())
@@ -110,8 +116,7 @@ func testSgrepFileRead() bool {
         return false
     }
 
-    for _, parsedRule := range parsedRules {
-        
+    for _, parsedRule := range parsedRules {        
         _, exists := expectedRuleContents[parsedRule.RawRuleText]
         if ! exists {
             return false
