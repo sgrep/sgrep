@@ -3,6 +3,9 @@ package sgrep
 import "io/ioutil"
 import "path"
 import "fmt"
+import "os"
+
+const SGREP_FILENAME string = ".sgrep"
 
 type Directory struct {
 	// The name of this directory relative to its parent directory.
@@ -11,6 +14,7 @@ type Directory struct {
 	Name        string
 	Files       []string
 	Directories []*Directory
+	Rules       []*Rule
 }
 
 func (dir *Directory) PrettyPrint() {
@@ -70,6 +74,15 @@ func WalkFolder(dirToWalk string) *Directory {
 
 	root := new(Directory)
 	root.Name = path.Base(dirToWalk)
+
+	// true if .sgrep file exists
+	potentialSgrepFilename := path.Join(dirToWalk, SGREP_FILENAME)
+	if _, err := os.Stat(potentialSgrepFilename); err == nil {
+		root.Rules = RuleSliceFromSgrepFile(potentialSgrepFilename)
+	} else {
+		// no rules to apply
+		root.Rules = make([]*Rule, 0)
+	}
 
 	for _, fileInfo := range dirContentsList {
 		absPath := path.Join(dirToWalk, fileInfo.Name())
