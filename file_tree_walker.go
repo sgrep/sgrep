@@ -22,6 +22,43 @@ func (dir *Directory) PrettyPrint() {
 }
 
 /**
+@returns true if dir's rule slice requires us to filter file. false otherwise.
+*/
+func (dir *Directory) shouldFilterFile(filename string) bool {
+	for _, rule := range dir.Rules {
+		if rule.FileFilterer(filename) {
+			return true
+		}
+	}
+	return false
+}
+
+func (dir *Directory) ListNonRuleFilteredFiles() []string {
+	toReturn := make([]string, 0)
+
+	// check files directly in dir (not including subdirectories)
+	for _, filename := range dir.Files {
+		absFilename := path.Join(dir.Name, filename)
+		if !dir.shouldFilterFile(absFilename) {
+			toReturn = append(toReturn, absFilename)
+		}
+	}
+
+	// check subdirectories
+	for _, subdir := range dir.Directories {
+		subdirFileSlice := subdir.ListNonRuleFilteredFiles()
+
+		for _, filename := range subdirFileSlice {
+			absFilename := path.Join(dir.Name, filename)
+			if !dir.shouldFilterFile(absFilename) {
+				toReturn = append(toReturn, absFilename)
+			}
+		}
+	}
+	return toReturn
+}
+
+/**
   Returns all files as fully-qualified filename from directory dir.
 */
 func (dir *Directory) ListFiles() []string {
