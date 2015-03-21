@@ -50,7 +50,7 @@ func (dir *Directory) shouldFilterFile(filename string) bool {
 	return false
 }
 
-func (dir *Directory) listNonRuleFilteredFiles() []string {
+func (dir *Directory) ListNonRuleFilteredFiles() []string {
 	toReturn := make([]string, 0)
 
 	// check files directly in dir (not including subdirectories)
@@ -63,7 +63,7 @@ func (dir *Directory) listNonRuleFilteredFiles() []string {
 
 	// check subdirectories
 	for _, subdir := range dir.directories {
-		subdirFileSlice := subdir.listNonRuleFilteredFiles()
+		subdirFileSlice := subdir.ListNonRuleFilteredFiles()
 
 		for _, filename := range subdirFileSlice {
 			absFilename := path.Join(dir.name, filename)
