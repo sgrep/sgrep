@@ -109,18 +109,7 @@ func WalkFolder(dirToWalk string) *Directory {
 		panic("IOError when reading directory " + dirToWalk)
 	}
 
-	root := new(Directory)
-	root.Name = path.Base(dirToWalk)
-
-	potentialSgrepFilename := path.Join(dirToWalk, SGREP_FILENAME)
-	// true if .sgrep file exists
-	if _, err := os.Stat(potentialSgrepFilename); err == nil {
-		root.Rules = RuleSliceFromSgrepFile(potentialSgrepFilename)
-	} else {
-		// no rules to apply
-		root.Rules = make([]*Rule, 0)
-	}
-
+	root := createDirectoryFromSgrep(dirToWalk)
 	for _, fileInfo := range dirContentsList {
 		absPath := path.Join(dirToWalk, fileInfo.Name())
 		if err != nil {
@@ -135,6 +124,25 @@ func WalkFolder(dirToWalk string) *Directory {
 		} else {
 			root.Files = append(root.Files, fileInfo.Name())
 		}
+	}
+	return root
+}
+
+/**
+From a file system directory, check for .sgrep file and produce
+rules based on its contents.
+ */
+func createDirectoryFromSgrep(directory string) *Directory {
+	root := new(Directory)
+	root.Name = path.Base(directory)
+
+	potentialSgrepFilename := path.Join(directory, SGREP_FILENAME)
+	// true if .sgrep file exists
+	if _, err := os.Stat(potentialSgrepFilename); err == nil {
+		root.Rules = RuleSliceFromSgrepFile(potentialSgrepFilename)
+	} else {
+		// no rules to apply
+		root.Rules = make([]*Rule, 0)
 	}
 	return root
 }
