@@ -17,6 +17,23 @@ type Directory struct {
 	rules       []*Rule
 }
 
+/**
+From current directory, look through all subfolders for sgrep files
+and connect those to sgrep files in all base directories.
+
+Returns directory representing base of file system.
+*/
+func generateSgrepDirectories(curDirStr string) *Directory {
+	curDir := walkFolderForwards(curDirStr)
+	// using path.Base includes all folders up until the curDir
+	rootDir := walkFolderBackwards(path.Base(curDirStr))
+
+	// join subdirectories to previous directories.
+	parentDir := deepestDir(rootDir)
+	parentDir.directories = append(parentDir.directories, curDir)
+	return rootDir
+}
+
 func (dir *Directory) PrettyPrint() {
 	dir.prettyPrintHelper(0)
 }
@@ -166,14 +183,23 @@ func walkFolderBackwards(dirToWalkStr string) *Directory {
 	baseDir := walkFolderBackwards(parentDirStr)
 
 	// append dir to end of directory chain.
-	parentDir := baseDir
-	for true {
-		if len(parentDir.directories) == 0 {
-			break
-		}
-		parentDir = parentDir.directories[0]
-	}
+	parentDir := deepestDir(baseDir)
 	parentDir.directories = append(parentDir.directories, dir)
 
 	return baseDir
+}
+
+/**
+@param dir --- Must have zero or one subdirectories.
+
+@return --- Returns the deepest subdirectory in tree.
+*/
+func deepestDir(dir *Directory) *Directory {
+	for true {
+		if len(dir.directories) == 0 {
+			break
+		}
+		dir = dir.directories[0]
+	}
+	return dir
 }
