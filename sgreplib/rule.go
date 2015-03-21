@@ -1,4 +1,4 @@
-package sgrep
+package sgreplib
 
 import "path/filepath"
 import "strings"

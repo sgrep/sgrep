@@ -1,4 +1,4 @@
-package sgrep
+package sgreplib
 
 import "io/ioutil"
 import "path"
