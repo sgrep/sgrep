@@ -112,8 +112,8 @@ func WalkFolder(dirToWalk string) *Directory {
 	root := new(Directory)
 	root.Name = path.Base(dirToWalk)
 
-	// true if .sgrep file exists
 	potentialSgrepFilename := path.Join(dirToWalk, SGREP_FILENAME)
+	// true if .sgrep file exists
 	if _, err := os.Stat(potentialSgrepFilename); err == nil {
 		root.Rules = RuleSliceFromSgrepFile(potentialSgrepFilename)
 	} else {
