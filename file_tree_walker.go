@@ -131,7 +131,7 @@ func WalkFolder(dirToWalk string) *Directory {
 /**
 From a file system directory, check for .sgrep file and produce
 rules based on its contents.
- */
+*/
 func createDirectoryFromSgrep(directory string) *Directory {
 	root := new(Directory)
 	root.Name = path.Base(directory)
@@ -145,4 +145,35 @@ func createDirectoryFromSgrep(directory string) *Directory {
 		root.Rules = make([]*Rule, 0)
 	}
 	return root
+}
+
+/**
+For a file system directory, generate rules from sgrep file (if it
+exists), and returns the shallowest directory (root of file system).
+Do not descend into files and folders in that directory.
+*/
+func WalkFolderBackwards(dirToWalkStr string) *Directory {
+	dir := createDirectoryFromSgrep(dirToWalkStr)
+	parentDirStr := path.Base(dirToWalkStr)
+
+	// Means that we got to base of file system and we can go no
+	// farther.
+	if parentDirStr == dirToWalkStr {
+		return dir
+	}
+
+	// base directory of file sytem, not necessarily parent directory
+	baseDir := WalkFolderBackwards(parentDirStr)
+
+	// append dir to end of directory chain.
+	parentDir := baseDir
+	for true {
+		if len(parentDir.Directories) == 0 {
+			break
+		}
+		parentDir = parentDir.Directories[0]
+	}
+	parentDir.Directories = append(parentDir.Directories, dir)
+
+	return baseDir
 }
