@@ -11,10 +11,10 @@ type Directory struct {
 	// The name of this directory relative to its parent directory.
 	// Eg., for structure a/b/c/, would have a directory with name
 	// a, name b, and name c.
-	Name        string
-	Files       []string
-	Directories []*Directory
-	Rules       []*Rule
+	name        string
+	files       []string
+	directories []*Directory
+	rules       []*Rule
 }
 
 func (dir *Directory) PrettyPrint() {
@@ -25,31 +25,31 @@ func (dir *Directory) PrettyPrint() {
 @returns true if dir's rule slice requires us to filter file. false otherwise.
 */
 func (dir *Directory) shouldFilterFile(filename string) bool {
-	for _, rule := range dir.Rules {
-		if rule.FileFilterer(filename) {
+	for _, rule := range dir.rules {
+		if rule.fileFilterer(filename) {
 			return true
 		}
 	}
 	return false
 }
 
-func (dir *Directory) ListNonRuleFilteredFiles() []string {
+func (dir *Directory) listNonRuleFilteredFiles() []string {
 	toReturn := make([]string, 0)
 
 	// check files directly in dir (not including subdirectories)
-	for _, filename := range dir.Files {
-		absFilename := path.Join(dir.Name, filename)
+	for _, filename := range dir.files {
+		absFilename := path.Join(dir.name, filename)
 		if !dir.shouldFilterFile(absFilename) {
 			toReturn = append(toReturn, absFilename)
 		}
 	}
 
 	// check subdirectories
-	for _, subdir := range dir.Directories {
-		subdirFileSlice := subdir.ListNonRuleFilteredFiles()
+	for _, subdir := range dir.directories {
+		subdirFileSlice := subdir.listNonRuleFilteredFiles()
 
 		for _, filename := range subdirFileSlice {
-			absFilename := path.Join(dir.Name, filename)
+			absFilename := path.Join(dir.name, filename)
 			if !dir.shouldFilterFile(absFilename) {
 				toReturn = append(toReturn, absFilename)
 			}
@@ -61,19 +61,19 @@ func (dir *Directory) ListNonRuleFilteredFiles() []string {
 /**
   Returns all files as fully-qualified filename from directory dir.
 */
-func (dir *Directory) ListFiles() []string {
+func (dir *Directory) listFiles() []string {
 	toReturn := make([]string, 0)
 
-	for _, filename := range dir.Files {
-		absFilename := path.Join(dir.Name, filename)
+	for _, filename := range dir.files {
+		absFilename := path.Join(dir.name, filename)
 		toReturn = append(toReturn, absFilename)
 	}
 
-	for _, subdir := range dir.Directories {
-		subdirFileSlice := subdir.ListFiles()
+	for _, subdir := range dir.directories {
+		subdirFileSlice := subdir.listFiles()
 
 		for _, filename := range subdirFileSlice {
-			absFilename := path.Join(dir.Name, filename)
+			absFilename := path.Join(dir.name, filename)
 			toReturn = append(toReturn, absFilename)
 		}
 	}
@@ -86,13 +86,13 @@ func (dir *Directory) prettyPrintHelper(indentationLevel uint32) {
 	for i := uint32(0); i < indentationLevel; i++ {
 		indentStr += "\t"
 	}
-	fmt.Println(indentStr + dir.Name + "/")
+	fmt.Println(indentStr + dir.name + "/")
 
-	for _, filename := range dir.Files {
+	for _, filename := range dir.files {
 		fmt.Println(indentStr + "\t" + filename)
 	}
 
-	for _, subDirectory := range dir.Directories {
+	for _, subDirectory := range dir.directories {
 		subDirectory.prettyPrintHelper(indentationLevel + 1)
 	}
 }
@@ -103,7 +103,7 @@ func (dir *Directory) prettyPrintHelper(indentationLevel uint32) {
 
   @returns A Directory struct containing all subfiles and folders.
 */
-func WalkFolder(dirToWalk string) *Directory {
+func walkFolderForwards(dirToWalk string) *Directory {
 	dirContentsList, err := ioutil.ReadDir(dirToWalk)
 	if err != nil {
 		panic("IOError when reading directory " + dirToWalk)
@@ -119,10 +119,10 @@ func WalkFolder(dirToWalk string) *Directory {
 		}
 
 		if fileInfo.IsDir() {
-			subDirectory := WalkFolder(absPath)
-			root.Directories = append(root.Directories, subDirectory)
+			subDirectory := walkFolderForwards(absPath)
+			root.directories = append(root.directories, subDirectory)
 		} else {
-			root.Files = append(root.Files, fileInfo.Name())
+			root.files = append(root.files, fileInfo.Name())
 		}
 	}
 	return root
@@ -134,15 +134,15 @@ rules based on its contents.
 */
 func createDirectoryFromSgrep(directory string) *Directory {
 	root := new(Directory)
-	root.Name = path.Base(directory)
+	root.name = path.Base(directory)
 
 	potentialSgrepFilename := path.Join(directory, SGREP_FILENAME)
 	// true if .sgrep file exists
 	if _, err := os.Stat(potentialSgrepFilename); err == nil {
-		root.Rules = RuleSliceFromSgrepFile(potentialSgrepFilename)
+		root.rules = ruleSliceFromSgrepFile(potentialSgrepFilename)
 	} else {
 		// no rules to apply
-		root.Rules = make([]*Rule, 0)
+		root.rules = make([]*Rule, 0)
 	}
 	return root
 }
@@ -152,7 +152,7 @@ For a file system directory, generate rules from sgrep file (if it
 exists), and returns the shallowest directory (root of file system).
 Do not descend into files and folders in that directory.
 */
-func WalkFolderBackwards(dirToWalkStr string) *Directory {
+func walkFolderBackwards(dirToWalkStr string) *Directory {
 	dir := createDirectoryFromSgrep(dirToWalkStr)
 	parentDirStr := path.Base(dirToWalkStr)
 
@@ -163,17 +163,17 @@ func WalkFolderBackwards(dirToWalkStr string) *Directory {
 	}
 
 	// base directory of file sytem, not necessarily parent directory
-	baseDir := WalkFolderBackwards(parentDirStr)
+	baseDir := walkFolderBackwards(parentDirStr)
 
 	// append dir to end of directory chain.
 	parentDir := baseDir
 	for true {
-		if len(parentDir.Directories) == 0 {
+		if len(parentDir.directories) == 0 {
 			break
 		}
-		parentDir = parentDir.Directories[0]
+		parentDir = parentDir.directories[0]
 	}
-	parentDir.Directories = append(parentDir.Directories, dir)
+	parentDir.directories = append(parentDir.directories, dir)
 
 	return baseDir
 }

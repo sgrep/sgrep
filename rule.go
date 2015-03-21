@@ -16,21 +16,21 @@ type Rule struct {
 	// loaded from.
 	containingFileAbsPath string
 	// the raw text of the associated rule
-	RawRuleText string
+	rawRuleText string
 }
 
-func ConstructRule(containingFileAbsPath, rawRuleText string) *Rule {
+func constructRule(containingFileAbsPath, rawRuleText string) *Rule {
 	r := Rule{}
 	r.containingFileAbsPath = containingFileAbsPath
-	r.RawRuleText = rawRuleText
+	r.rawRuleText = rawRuleText
 	return &r
 }
 
 // returns true if this rule filters (ie., says not to look in) file
 // named filename.
-func (rule *Rule) FileFilterer(filename string) bool {
+func (rule *Rule) fileFilterer(filename string) bool {
 
-	didMatch, err := filepath.Match(rule.RawRuleText, filename)
+	didMatch, err := filepath.Match(rule.rawRuleText, filename)
 	if err != nil {
 		panic("Broken match operation in rule")
 	}
@@ -50,7 +50,7 @@ contains the line that we're about to parse into a rule.
 @returns nil if text does not produce a valid sgrep rule (eg., empty
 line, commented-out rule, etc.)  Otherwise, returns rule.
 */
-func ParseRule(sgrepAbsFilename, text string) *Rule {
+func parseRule(sgrepAbsFilename, text string) *Rule {
 	// ignore comments
 	commentIndex := strings.Index(text, COMMENT_STRING)
 	if commentIndex != -1 {
@@ -61,13 +61,13 @@ func ParseRule(sgrepAbsFilename, text string) *Rule {
 	if text == "" {
 		return nil
 	}
-	return ConstructRule(sgrepAbsFilename, text)
+	return constructRule(sgrepAbsFilename, text)
 }
 
 /**
 @param absFilename --- Absolute filename to read sgrep rules from.
 */
-func RuleSliceFromSgrepFile(absFilename string) []*Rule {
+func ruleSliceFromSgrepFile(absFilename string) []*Rule {
 	var toReturn []*Rule
 	fh, err := os.Open(absFilename)
 	if err != nil {
@@ -79,7 +79,7 @@ func RuleSliceFromSgrepFile(absFilename string) []*Rule {
 
 	scanner := bufio.NewScanner(fh)
 	for scanner.Scan() {
-		newRule := ParseRule(absFilename, scanner.Text())
+		newRule := parseRule(absFilename, scanner.Text())
 		if newRule != nil {
 			toReturn = append(toReturn, newRule)
 		}

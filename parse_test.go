@@ -14,14 +14,14 @@ type ruleTextAndExpected struct {
 @returns true if parsing textAndExpected.ruleText produces expectedResult
 */
 func (textAndExpected *ruleTextAndExpected) correctlyParses() bool {
-	rule := ParseRule("dummy", textAndExpected.ruleText)
+	rule := parseRule("dummy", textAndExpected.ruleText)
 	if rule == nil {
 		if !textAndExpected.shouldProduceRule {
 			return true
 		}
 		return false
 	}
-	return rule.RawRuleText == textAndExpected.expected
+	return rule.rawRuleText == textAndExpected.expected
 }
 
 /**
@@ -107,16 +107,16 @@ func TestSgrepFileRead(t *testing.T) {
 		"a/*/something.txt": true,
 	}
 
-	parsedRules := RuleSliceFromSgrepFile(tmpFile.Name())
+	parsedRules := ruleSliceFromSgrepFile(tmpFile.Name())
 
 	if len(parsedRules) != len(expectedRuleContents) {
 		t.Fatalf("Parsing didn't return expected number of rules")
 	}
 
 	for _, parsedRule := range parsedRules {
-		_, exists := expectedRuleContents[parsedRule.RawRuleText]
+		_, exists := expectedRuleContents[parsedRule.rawRuleText]
 		if !exists {
-			t.Errorf("Unexpected rule returned by parser: ", parsedRule.RawRuleText)
+			t.Errorf("Unexpected rule returned by parser: ", parsedRule.rawRuleText)
 		}
 	}
 }
