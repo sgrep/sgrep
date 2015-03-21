@@ -23,7 +23,7 @@ and connect those to sgrep files in all base directories.
 
 Returns directory representing base of file system.
 */
-func generateSgrepDirectories(curDirStr string) *Directory {
+func GenerateSgrepDirectories(curDirStr string) *Directory {
 	curDir := walkFolderForwards(curDirStr)
 	// using path.Base includes all folders up until the curDir
 	rootDir := walkFolderBackwards(path.Base(curDirStr))
