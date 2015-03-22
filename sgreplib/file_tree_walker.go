@@ -131,8 +131,8 @@ func (dir *Directory) ListNonRuleFilteredFiles() []string {
 
 	// check files directly in dir (not including subdirectories)
 	for _, filename := range dir.files {
-		absFilename := path.Join(dir.name, filename)
-		if !dir.shouldFilterFile(absFilename) {
+		if !dir.shouldFilterFile(filename) {
+			absFilename := path.Join(dir.name, filename)
 			toReturn = append(toReturn, absFilename)
 		}
 	}

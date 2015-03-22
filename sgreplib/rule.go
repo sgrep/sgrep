@@ -29,7 +29,6 @@ func constructRule(containingFileAbsPath, rawRuleText string) *Rule {
 // returns true if this rule filters (ie., says not to look in) file
 // named filename.
 func (rule *Rule) fileFilterer(filename string) bool {
-
 	didMatch, err := filepath.Match(rule.rawRuleText, filename)
 	if err != nil {
 		panic("Broken match operation in rule")
