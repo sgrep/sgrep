@@ -27,10 +27,10 @@ Returns directory representing base of file system.
 */
 func GenerateSgrepDirectories(curDirStr string) *Directory {
 	curDir := walkFolderForwards(curDirStr)
-	
+
 	// using filepath.Dir includes all folders up until the curDir
 	rootDir := walkFolderBackwards(filepath.Dir(curDirStr))
-	
+
 	// join subdirectories to previous directories.
 	parentDir := deepestDir(rootDir)
 	parentDir.directories = append(parentDir.directories, curDir)
@@ -38,11 +38,11 @@ func GenerateSgrepDirectories(curDirStr string) *Directory {
 }
 
 /**
- Runs .sgrep filter over all command line argument filenames passed in.
+Runs .sgrep filter over all command line argument filenames passed in.
 */
-func NonFilteredFilesToGrepOver (absFilenames []string) []string {
+func NonFilteredFilesToGrepOver(absFilenames []string) []string {
 	// keys are folder names and values are lists of filenames
-	folderNameToFilenameLists := make(map[string]  []string)
+	folderNameToFilenameLists := make(map[string][]string)
 
 	// we do not want to construct a directory object for every
 	// single file.  Instead, creating a separate directory object
@@ -55,22 +55,20 @@ func NonFilteredFilesToGrepOver (absFilenames []string) []string {
 
 	// actually generate directories and try filtering
 	// list of filenames that we actually should grep over
-	var toReturn [] string
+	var toReturn []string
 
 	for folderName := range folderNameToFilenameLists {
-		folderDir := GenerateSgrepDirectories (folderName)
+		folderDir := GenerateSgrepDirectories(folderName)
 		filesInDir := folderNameToFilenameLists[folderName]
 
 		for _, absFilename := range filesInDir {
-			if ! folderDir.RecursiveShouldFilterFile (absFilename) {
+			if !folderDir.RecursiveShouldFilterFile(absFilename) {
 				toReturn = append(toReturn, absFilename)
 			}
 		}
 	}
 	return toReturn
 }
-
-
 
 /**
 @param absFilename --- The fully-qualified filename for a file.
@@ -79,24 +77,24 @@ Should be a filename reachable from dir.
 @returns --- true if one of the .sgrep files in directories screens
 the file from being grepped over.
 */
-func (dir *Directory) RecursiveShouldFilterFile (absFilename string) bool {
+func (dir *Directory) RecursiveShouldFilterFile(absFilename string) bool {
 	dirToCheck := dir
 	splitList := strings.Split(absFilename, string(filepath.Separator))
 	// FIXME: non-portable, putting / at beginning of separated list
-	splitList = splitList[1 : len(splitList) - 1]
-	
+	splitList = splitList[1 : len(splitList)-1]
+
 	for index, individualDir := range splitList {
 		constructedFile := path.Join(splitList[index:]...)
 		constructedFile =
-			path.Join( string(filepath.Separator),constructedFile)
-		
+			path.Join(string(filepath.Separator), constructedFile)
+
 		if dirToCheck.shouldFilterFile(constructedFile) {
 			return true
 		}
 
 		// find next directory to put in
 		foundDir := false
-		for _, subdir:= range dirToCheck.directories {
+		for _, subdir := range dirToCheck.directories {
 			if subdir.name == individualDir {
 				dirToCheck = subdir
 				foundDir = true

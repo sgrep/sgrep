@@ -16,7 +16,7 @@ func main() {
 	// a list of files to grep in
 	var filesToGrepOver []string
 	var filesToCheckWhetherToGrepOver []string
-	
+
 	// for all files and folders in whereToGrep, find folders,
 	for _, toGrepOver := range args.whereToGrep {
 		file, err := os.Open(toGrepOver)
@@ -39,7 +39,7 @@ func main() {
 						toGrepOver +
 						" without recursive flag, -r.")
 			}
-			dir := sgreplib.GenerateSgrepDirectories (toGrepOver)
+			dir := sgreplib.GenerateSgrepDirectories(toGrepOver)
 			dirFiles := dir.ListNonRuleFilteredFiles()
 			filesToGrepOver = append(filesToGrepOver, dirFiles...)
 		} else {
@@ -50,14 +50,14 @@ func main() {
 
 	// run .sgrep filter over all command line argument filenames
 	// pass in
-	nonFilteredFiles := sgreplib.NonFilteredFilesToGrepOver (
+	nonFilteredFiles := sgreplib.NonFilteredFilesToGrepOver(
 		filesToCheckWhetherToGrepOver)
 	filesToGrepOver = append(filesToGrepOver, nonFilteredFiles...)
-	
-	var argArray [] string
+
+	var argArray []string
 	argArray = append(argArray, args.whatToGrepFor)
 	argArray = append(argArray, filesToGrepOver...)
-	
+
 	// execute grep command
 	cmd := exec.Command(GREP_BIN_PATH, argArray...)
 	stdout, err := cmd.StdoutPipe()
@@ -83,7 +83,7 @@ Read the command line args passed into this binary.
 */
 func parseArgs() *SgrepArgs {
 	toReturn := new(SgrepArgs)
-	
+
 	recursiveArgPtr := flag.Bool("r", false, "Recursive")
 	flag.Parse()
 
@@ -109,7 +109,7 @@ func parseArgs() *SgrepArgs {
 }
 
 type SgrepArgs struct {
-	recursive bool
+	recursive     bool
 	whatToGrepFor string
-	whereToGrep []string
+	whereToGrep   []string
 }
