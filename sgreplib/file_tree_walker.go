@@ -37,6 +37,40 @@ func GenerateSgrepDirectories(curDirStr string) *Directory {
 	return rootDir
 }
 
+/**
+ Runs .sgrep filter over all command line argument filenames passed in.
+*/
+func NonFilteredFilesToGrepOver (absFilenames []string) []string {
+	// keys are folder names and values are lists of filenames
+	folderNameToFilenameLists := make(map[string]  []string)
+
+	// we do not want to construct a directory object for every
+	// single file.  Instead, creating a separate directory object
+	// for every file system directory.
+	for _, absFilename := range absFilenames {
+		folderName := filepath.Dir(absFilename)
+		folderNameToFilenameLists[folderName] =
+			append(folderNameToFilenameLists[folderName], absFilename)
+	}
+
+	// actually generate directories and try filtering
+	// list of filenames that we actually should grep over
+	var toReturn [] string
+
+	for folderName := range folderNameToFilenameLists {
+		folderDir := GenerateSgrepDirectories (folderName)
+		filesInDir := folderNameToFilenameLists[folderName]
+
+		for _, absFilename := range filesInDir {
+			if ! folderDir.RecursiveShouldFilterFile (absFilename) {
+				toReturn = append(toReturn, absFilename)
+			}
+		}
+	}
+	return toReturn
+}
+
+
 
 /**
 @param absFilename --- The fully-qualified filename for a file.

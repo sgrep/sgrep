@@ -15,8 +15,9 @@ func main() {
 	args := parseArgs()
 	// a list of files to grep in
 	var filesToGrepOver []string
+	var filesToCheckWhetherToGrepOver []string
 	
-	// for all files and folders in whereToGrep, find folders, 
+	// for all files and folders in whereToGrep, find folders,
 	for _, toGrepOver := range args.whereToGrep {
 		file, err := os.Open(toGrepOver)
 		if err != nil {
@@ -27,7 +28,6 @@ func main() {
 		if err != nil {
 			panic("Could not stat file")
 		}
-
 
 		if fi.IsDir() {
 			// if it's a directory, then read through all
@@ -43,15 +43,16 @@ func main() {
 			dirFiles := dir.ListNonRuleFilteredFiles()
 			filesToGrepOver = append(filesToGrepOver, dirFiles...)
 		} else {
-			folderDirStr := filepath.Dir(toGrepOver)
-			folderDir :=
-				sgreplib.GenerateSgrepDirectories (folderDirStr)
-			if ! folderDir.RecursiveShouldFilterFile (toGrepOver) {
-				filesToGrepOver =
-					append(filesToGrepOver, toGrepOver)
-			}
+			filesToCheckWhetherToGrepOver = append(
+				filesToCheckWhetherToGrepOver, toGrepOver)
 		}
 	}
+
+	// run .sgrep filter over all command line argument filenames
+	// pass in
+	nonFilteredFiles := sgreplib.NonFilteredFilesToGrepOver (
+		filesToCheckWhetherToGrepOver)
+	filesToGrepOver = append(filesToGrepOver, nonFilteredFiles...)
 	
 	var argArray [] string
 	argArray = append(argArray, args.whatToGrepFor)
