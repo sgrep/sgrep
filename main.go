@@ -28,10 +28,11 @@ func main() {
 			panic("Could not stat file")
 		}
 
-		// if it's a directory, then read through all folders
-		// and check for subdirectories to recursively grep
-		// over.
+
 		if fi.IsDir() {
+			// if it's a directory, then read through all
+			// folders and check for subdirectories to
+			// recursively grep over.
 			if !args.recursive {
 				panic(
 					"Specifying directory named " +
@@ -41,6 +42,14 @@ func main() {
 			dir := sgreplib.GenerateSgrepDirectories (toGrepOver)
 			dirFiles := dir.ListNonRuleFilteredFiles()
 			filesToGrepOver = append(filesToGrepOver, dirFiles...)
+		} else {
+			folderDirStr := filepath.Dir(toGrepOver)
+			folderDir :=
+				sgreplib.GenerateSgrepDirectories (folderDirStr)
+			if ! folderDir.RecursiveShouldFilterFile (toGrepOver) {
+				filesToGrepOver =
+					append(filesToGrepOver, toGrepOver)
+			}
 		}
 	}
 	

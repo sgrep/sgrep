@@ -5,6 +5,7 @@ import "path"
 import "path/filepath"
 import "fmt"
 import "os"
+import "strings"
 
 const SGREP_FILENAME string = ".sgrep"
 
@@ -34,6 +35,45 @@ func GenerateSgrepDirectories(curDirStr string) *Directory {
 	parentDir := deepestDir(rootDir)
 	parentDir.directories = append(parentDir.directories, curDir)
 	return rootDir
+}
+
+
+/**
+@param absFilename --- The fully-qualified filename for a file.
+Should be a filename reachable from dir.
+
+@returns --- true if one of the .sgrep files in directories screens
+the file from being grepped over.
+*/
+func (dir *Directory) RecursiveShouldFilterFile (absFilename string) bool {
+	dirToCheck := dir
+	splitList := strings.Split(absFilename, string(filepath.Separator))
+	// FIXME: non-portable, putting / at beginning of separated list
+	splitList = splitList[1 : len(splitList) - 1]
+	
+	for index, individualDir := range splitList {
+		constructedFile := path.Join(splitList[index:]...)
+		constructedFile =
+			path.Join( string(filepath.Separator),constructedFile)
+		
+		if dirToCheck.shouldFilterFile(constructedFile) {
+			return true
+		}
+
+		// find next directory to put in
+		foundDir := false
+		for _, subdir:= range dirToCheck.directories {
+			if subdir.name == individualDir {
+				dirToCheck = subdir
+				foundDir = true
+				break
+			}
+		}
+		if !foundDir {
+			panic("Could not find associated directory")
+		}
+	}
+	return false
 }
 
 func (dir *Directory) PrettyPrint() {
