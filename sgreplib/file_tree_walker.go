@@ -2,6 +2,7 @@ package sgreplib
 
 import "io/ioutil"
 import "path"
+import "path/filepath"
 import "fmt"
 import "os"
 
@@ -25,12 +26,13 @@ Returns directory representing base of file system.
 */
 func GenerateSgrepDirectories(curDirStr string) *Directory {
 	curDir := walkFolderForwards(curDirStr)
-	// using path.Base includes all folders up until the curDir
-	rootDir := walkFolderBackwards(path.Base(curDirStr))
-
+	// using filepath.Dir includes all folders up until the curDir
+	rootDir := walkFolderBackwards(filepath.Dir(curDirStr))
+	
 	// join subdirectories to previous directories.
 	parentDir := deepestDir(rootDir)
 	parentDir.directories = append(parentDir.directories, curDir)
+	
 	return rootDir
 }
 
@@ -151,7 +153,7 @@ rules based on its contents.
 */
 func createDirectoryFromSgrep(directory string) *Directory {
 	root := new(Directory)
-	root.name = path.Base(directory)
+	root.name = filepath.Dir(directory)
 
 	potentialSgrepFilename := path.Join(directory, SGREP_FILENAME)
 	// true if .sgrep file exists
@@ -171,7 +173,7 @@ Do not descend into files and folders in that directory.
 */
 func walkFolderBackwards(dirToWalkStr string) *Directory {
 	dir := createDirectoryFromSgrep(dirToWalkStr)
-	parentDirStr := path.Base(dirToWalkStr)
+	parentDirStr := filepath.Dir(dirToWalkStr)
 
 	// Means that we got to base of file system and we can go no
 	// farther.
