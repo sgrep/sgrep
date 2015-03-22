@@ -81,7 +81,7 @@ func TestSgrepFileRead(t *testing.T) {
 	tmpFile, err := ioutil.TempFile("", "empty")
 
 	if err != nil {
-		panic("Cannot create temporary file for sgrep read test")
+		t.Error("Cannot create temporary file for sgrep read test")
 	}
 
 	sgrepFileContents := "a\n"

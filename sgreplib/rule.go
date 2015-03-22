@@ -4,6 +4,7 @@ import "strings"
 import "os"
 import "bufio"
 import "regexp"
+import "log"
 
 const COMMENT_STRING string = "#"
 
@@ -31,7 +32,7 @@ func constructRule(containingFileAbsPath, rawRuleText string) *Rule {
 func (rule *Rule) fileFilterer(filename string) bool {
 	didMatch, err := regexp.MatchString(rule.rawRuleText, filename)
 	if err != nil {
-		panic("Broken regexp in " + rule.containingFileAbsPath +
+		log.Fatal("Broken regexp in " + rule.containingFileAbsPath +
 			".  Could not process regular expression " +
 			rule.rawRuleText)
 	}
@@ -72,7 +73,7 @@ func ruleSliceFromSgrepFile(absFilename string) []*Rule {
 	var toReturn []*Rule
 	fh, err := os.Open(absFilename)
 	if err != nil {
-		panic("Could not open " + absFilename +
+		log.Fatal("Could not open " + absFilename +
 			" for reading sgrep rules.")
 	}
 	// at end of function, close fh
@@ -88,7 +89,7 @@ func ruleSliceFromSgrepFile(absFilename string) []*Rule {
 	}
 	err = scanner.Err()
 	if err != nil {
-		panic("Error scanning file " + absFilename +
+		log.Fatal("Error scanning file " + absFilename +
 			" while reading sgrep rules.")
 	}
 

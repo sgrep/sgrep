@@ -21,12 +21,12 @@ func main() {
 	for _, toGrepOver := range args.whereToGrep {
 		file, err := os.Open(toGrepOver)
 		if err != nil {
-			panic("Could not open file")
+			log.Fatal("Could not open file " + toGrepOver)
 		}
 		defer file.Close()
 		fi, err := file.Stat()
 		if err != nil {
-			panic("Could not stat file")
+			log.Fatal("Could not stat file " + toGrepOver)
 		}
 
 		if fi.IsDir() {
@@ -34,7 +34,7 @@ func main() {
 			// folders and check for subdirectories to
 			// recursively grep over.
 			if !args.recursive {
-				panic(
+				log.Fatal(
 					"Specifying directory named " +
 						toGrepOver +
 						" without recursive flag, -r.")

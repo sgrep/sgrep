@@ -6,6 +6,7 @@ import "path/filepath"
 import "fmt"
 import "os"
 import "strings"
+import "log"
 
 const SGREP_FILENAME string = ".sgrep"
 
@@ -102,7 +103,7 @@ func (dir *Directory) RecursiveShouldFilterFile(absFilename string) bool {
 			}
 		}
 		if !foundDir {
-			panic("Could not find associated directory")
+			log.Fatal("Could not find associated directory")
 		}
 	}
 	return false
@@ -197,14 +198,14 @@ func (dir *Directory) prettyPrintHelper(indentationLevel uint32) {
 func walkFolderForwards(dirToWalk string) *Directory {
 	dirContentsList, err := ioutil.ReadDir(dirToWalk)
 	if err != nil {
-		panic("IOError when reading directory " + dirToWalk)
+		log.Fatal("IOError when reading directory " + dirToWalk)
 	}
 
 	root := createDirectoryFromSgrep(dirToWalk)
 	for _, fileInfo := range dirContentsList {
 		absPath := path.Join(dirToWalk, fileInfo.Name())
 		if err != nil {
-			panic(
+			log.Fatal(
 				"Could not stat file or folder named " +
 					absPath)
 		}
