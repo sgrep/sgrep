@@ -89,9 +89,9 @@ func TestSgrepFileRead(t *testing.T) {
 	sgrepFileContents += "fefe   m\n"
 	sgrepFileContents += "fefes #  m\n"
 	sgrepFileContents += "\n\n"
-	sgrepFileContents += "a/b/c*\n"
-	sgrepFileContents += "*py\n"
-	sgrepFileContents += "a/*/something.txt"
+	sgrepFileContents += "a/b/c.*?\n"
+	sgrepFileContents += ".*?py\n"
+	sgrepFileContents += "a/.*?/something.txt"
 
 	tmpFile.WriteString(sgrepFileContents)
 	tmpFile.Sync()
@@ -99,12 +99,12 @@ func TestSgrepFileRead(t *testing.T) {
 	// value has no meaning.  only using bool value because can't find
 	// golang-native way to use a set.
 	expectedRuleContents := map[string]bool{
-		"a":                 true,
-		"fefe   m":          true,
-		"fefes":             true,
-		"a/b/c*":            true,
-		"*py":               true,
-		"a/*/something.txt": true,
+		"a":                   true,
+		"fefe   m":            true,
+		"fefes":               true,
+		"a/b/c.*?":            true,
+		".*?py":               true,
+		"a/.*?/something.txt": true,
 	}
 
 	parsedRules := ruleSliceFromSgrepFile(tmpFile.Name())
@@ -116,7 +116,8 @@ func TestSgrepFileRead(t *testing.T) {
 	for _, parsedRule := range parsedRules {
 		_, exists := expectedRuleContents[parsedRule.rawRuleText]
 		if !exists {
-			t.Errorf("Unexpected rule returned by parser: ", parsedRule.rawRuleText)
+			t.Errorf("Unexpected rule returned by parser: ",
+				parsedRule.rawRuleText)
 		}
 	}
 }

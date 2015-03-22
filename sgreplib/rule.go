@@ -42,7 +42,6 @@ func (rule *Rule) fileFilterer(filename string) bool {
 	return false
 }
 
-
 /**
 @param sgrepAbsFilename --- The absolute path for the file that
 contains the line that we're about to parse into a rule.
