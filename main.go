@@ -1,24 +1,18 @@
 package main
 
 import "github.com/sgrep/sgrep/sgreplib"
-import "fmt"
+import "flag"
 import "os"
-
 import "os/exec"
 import "log"
 import "io"
+
 
 // FIXME: probably more generic ways to do this (eg., for windows)
 const GREP_BIN_PATH string = "grep"
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println(
-			"Currently, sgrep requires a single argument: " +
-				"what to grep for.")
-		return
-	}
-	whatToGrepFor := os.Args[1]
+	args := parseArgs()
 	
 	currWorkingDir, err := os.Getwd()
 	if err != nil {
@@ -28,7 +22,7 @@ func main() {
 	filesToGrepOver := dir.ListNonRuleFilteredFiles()
 	
 	var argArray [] string
-	argArray = append(argArray, whatToGrepFor)
+	argArray = append(argArray, args.whatToGrepFor)
 	argArray = append(argArray, filesToGrepOver... )
 	
 	// execute grep command
@@ -49,4 +43,32 @@ func main() {
 	go io.Copy(os.Stdout, stdout)
 	go io.Copy(os.Stderr, stderr)
 	cmd.Wait()
+}
+
+/**
+Read the command line args passed into this binary.
+*/
+func parseArgs() *SgrepArgs {
+	toReturn := new(SgrepArgs)
+	
+	recursiveArgPtr := flag.Bool("r", false, "Recursive")
+	flag.Parse()
+
+	toReturn.recursive = *recursiveArgPtr
+	flagArgs := flag.Args()
+	if len(flagArgs) == 0 {
+		log.Fatal(
+			"Currently, sgrep requires a single argument: " +
+				"what to grep for.")
+	}
+
+	toReturn.whatToGrepFor = flagArgs[0]
+	toReturn.whereToGrep = flagArgs[1:]
+	return toReturn
+}
+
+type SgrepArgs struct {
+	recursive bool
+	whatToGrepFor string
+	whereToGrep []string
 }
