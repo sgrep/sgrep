@@ -26,13 +26,13 @@ Returns directory representing base of file system.
 */
 func GenerateSgrepDirectories(curDirStr string) *Directory {
 	curDir := walkFolderForwards(curDirStr)
+	
 	// using filepath.Dir includes all folders up until the curDir
 	rootDir := walkFolderBackwards(filepath.Dir(curDirStr))
 	
 	// join subdirectories to previous directories.
 	parentDir := deepestDir(rootDir)
 	parentDir.directories = append(parentDir.directories, curDir)
-	
 	return rootDir
 }
 

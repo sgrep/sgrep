@@ -6,24 +6,47 @@ import "os"
 import "os/exec"
 import "log"
 import "io"
-
+import "path/filepath"
 
 // FIXME: probably more generic ways to do this (eg., for windows)
 const GREP_BIN_PATH string = "grep"
 
 func main() {
 	args := parseArgs()
+	// a list of files to grep in
+	var filesToGrepOver []string
 	
-	currWorkingDir, err := os.Getwd()
-	if err != nil {
-		panic("Could not find current working directory")
+	// for all files and folders in whereToGrep, find folders, 
+	for _, toGrepOver := range args.whereToGrep {
+		file, err := os.Open(toGrepOver)
+		if err != nil {
+			panic("Could not open file")
+		}
+		defer file.Close()
+		fi, err := file.Stat()
+		if err != nil {
+			panic("Could not stat file")
+		}
+
+		// if it's a directory, then read through all folders
+		// and check for subdirectories to recursively grep
+		// over.
+		if fi.IsDir() {
+			if !args.recursive {
+				panic(
+					"Specifying directory named " +
+						toGrepOver +
+						" without recursive flag, -r.")
+			}
+			dir := sgreplib.GenerateSgrepDirectories (toGrepOver)
+			dirFiles := dir.ListNonRuleFilteredFiles()
+			filesToGrepOver = append(filesToGrepOver, dirFiles...)
+		}
 	}
-	dir := sgreplib.GenerateSgrepDirectories (currWorkingDir)
-	filesToGrepOver := dir.ListNonRuleFilteredFiles()
 	
 	var argArray [] string
 	argArray = append(argArray, args.whatToGrepFor)
-	argArray = append(argArray, filesToGrepOver... )
+	argArray = append(argArray, filesToGrepOver...)
 	
 	// execute grep command
 	cmd := exec.Command(GREP_BIN_PATH, argArray...)
@@ -63,7 +86,15 @@ func parseArgs() *SgrepArgs {
 	}
 
 	toReturn.whatToGrepFor = flagArgs[0]
-	toReturn.whereToGrep = flagArgs[1:]
+
+	// construct absolute pathnames for what to grep over
+	for _, whereToGrep := range flagArgs[1:] {
+		absPath, err := filepath.Abs(whereToGrep)
+		if err != nil {
+			log.Fatal("Error creating abs path for file")
+		}
+		toReturn.whereToGrep = append(toReturn.whereToGrep, absPath)
+	}
 	return toReturn
 }
 
