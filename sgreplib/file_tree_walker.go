@@ -153,7 +153,7 @@ rules based on its contents.
 */
 func createDirectoryFromSgrep(directory string) *Directory {
 	root := new(Directory)
-	root.name = filepath.Dir(directory)
+	root.name = path.Base(directory)
 
 	potentialSgrepFilename := path.Join(directory, SGREP_FILENAME)
 	// true if .sgrep file exists
