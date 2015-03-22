@@ -1,9 +1,9 @@
 package sgreplib
 
-import "path/filepath"
 import "strings"
 import "os"
 import "bufio"
+import "regexp"
 
 const COMMENT_STRING string = "#"
 
@@ -29,9 +29,11 @@ func constructRule(containingFileAbsPath, rawRuleText string) *Rule {
 // returns true if this rule filters (ie., says not to look in) file
 // named filename.
 func (rule *Rule) fileFilterer(filename string) bool {
-	didMatch, err := filepath.Match(rule.rawRuleText, filename)
+	didMatch, err := regexp.MatchString(rule.rawRuleText, filename)
 	if err != nil {
-		panic("Broken match operation in rule")
+		panic("Broken regexp in " + rule.containingFileAbsPath +
+			".  Could not process regular expression " +
+			rule.rawRuleText)
 	}
 
 	if didMatch {
@@ -39,6 +41,7 @@ func (rule *Rule) fileFilterer(filename string) bool {
 	}
 	return false
 }
+
 
 /**
 @param sgrepAbsFilename --- The absolute path for the file that
